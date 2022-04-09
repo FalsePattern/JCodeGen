@@ -33,16 +33,24 @@ import java.util.stream.Collectors;
 @Builder
 @RequiredArgsConstructor
 public class CClass {
-    public final String pkg;
+    @Getter
+    private final String pkg;
     @Builder.Default
-    public final AccessSpecifier accessSpecifier = AccessSpecifier.builder().build();
-    public final String name;
+    @Getter
+    private final AccessSpecifier accessSpecifier = AccessSpecifier.builder().build();
+    @Getter
+    private final String name;
     @Builder.Default
-    public final CType superclass = CType.OBJECT;
+    @Getter
+    private final CType superclass = CType.OBJECT;
     private final Set<CType> imports = new HashSet<>();
     private final List<CField> fields = new ArrayList<>();
     private final List<CConstructor> constructors = new ArrayList<>();
     private final List<CMethod> methods = new ArrayList<>();
+
+    public CType getCType() {
+        return CType.of(pkg + "." + name, 0);
+    }
 
     public void importImplicitly(CType type) {
         imports.add(type);
@@ -73,10 +81,6 @@ public class CClass {
                                              .code("super(" + constructor.paramList.getParameters().stream().map(CParameter::getName).collect(Collectors.joining(", ")) + ");")
                                              .build());
         });
-    }
-
-    public CType asCType() {
-        return new CType(pkg + "." + name, 0);
     }
 
     @Override
