@@ -47,12 +47,13 @@ public final class CType {
         if (classMap.containsKey(clazz)) {
             return classMap.get(clazz);
         }
-        val cType = new CType(
-                getBaseTypeOfNDimensionalArray(clazz).getName().replace('$', '.'),
-                getBaseTypeOfNDimensionalArray(clazz).isPrimitive(),
-                countArrayDimensions(clazz));
-        classMap.put(clazz, cType);
-        return cType;
+        val name = getBaseTypeOfNDimensionalArray(clazz).getName().replace('$', '.');
+        val prim = getBaseTypeOfNDimensionalArray(clazz).isPrimitive();
+        val arr = countArrayDimensions(clazz);
+        val type = new CType(name, prim, arr);
+        classMap.put(clazz, type);
+        nameArrayMap.computeIfAbsent(name, (ignored) -> new HashMap<>()).put(arr, type);
+        return type;
     }
 
     public static CType of(String name, int arrayDimensions) {
