@@ -48,4 +48,21 @@ public class CParamList implements TypeCarrier {
     public String toString() {
         return parameters.stream().map(CParameter::toString).collect(Collectors.joining(", "));
     }
+
+    public static CParamListBuilder builder() {
+        return new CParamListBuilder();
+    }
+
+    public static class CParamListBuilder {
+        private CParamListBuilder(){}
+        private final List<CParameter> params = new ArrayList<>();
+        public CParamListBuilder addParam(CParameter param) {
+            params.add(param);
+            return this;
+        }
+
+        public CParamList build() {
+            return new CParamList(params);
+        }
+    }
 }
