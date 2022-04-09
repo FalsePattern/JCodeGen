@@ -6,7 +6,7 @@
 
     <groupId>com.falsepattern</groupId>
     <artifactId>jcodegen</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <properties>
         <java.version>8</java.version>
@@ -34,8 +34,8 @@
         <profile>
             <id>Distribution</id>
             <properties>
-                <project.distribution.name>example</project.distribution.name>
-                <project.distribution.url>https://example.com</project.distribution.url>
+                <project.distribution.name>mavenpattern</project.distribution.name>
+                <project.distribution.url>https://maven.falsepattern.com</project.distribution.url>
             </properties>
             <distributionManagement>
                 <repository>

@@ -21,7 +21,6 @@
  */
 package com.falsepattern.jcodegen;
 
-import lombok.Builder;
 import lombok.val;
 
 import java.lang.reflect.Array;
@@ -31,7 +30,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class CType {
-    private static final Map<Class<?>, CType> typeMap = new HashMap<>();
+    private static final Map<Class<?>, CType> classMap = new HashMap<>();
+    private static final Map<String, Map<Integer, CType>> nameArrayMap = new HashMap<>();
 
     public static final CType VOID = CType.of(void.class);
     public static final CType BYTE = CType.of(byte.class);
@@ -44,15 +44,31 @@ public final class CType {
     public static final CType OBJECT = CType.of(Object.class);
 
     public static CType of(Class<?> clazz) {
-        if (typeMap.containsKey(clazz)) {
-            return typeMap.get(clazz);
+        if (classMap.containsKey(clazz)) {
+            return classMap.get(clazz);
         }
         val cType = new CType(
                 getBaseTypeOfNDimensionalArray(clazz).getName().replace('$', '.'),
                 getBaseTypeOfNDimensionalArray(clazz).isPrimitive(),
                 countArrayDimensions(clazz));
-        typeMap.put(clazz, cType);
+        classMap.put(clazz, cType);
         return cType;
+    }
+
+    public static CType of(String name, int arrayDimensions) {
+        if (nameArrayMap.containsKey(name)) {
+            val arrayMap = nameArrayMap.get(name);
+            if (arrayMap.containsKey(arrayDimensions)) {
+                return arrayMap.get(arrayDimensions);
+            }
+        }
+        val type = new CType(name, false, arrayDimensions);
+        nameArrayMap.computeIfAbsent(name, (ignored) -> new HashMap<>()).put(arrayDimensions, type);
+        return type;
+    }
+
+    public static CType of(String name) {
+        return of(name, 0);
     }
 
     private final String name;
@@ -64,14 +80,6 @@ public final class CType {
         this.name = name;
         this.primitive = primitive;
         this.arrayDimensions = arrayDimensions;
-    }
-
-    public CType(String name, int arrayDimensions) {
-        this(name, false, arrayDimensions);
-    }
-
-    public CType(String name) {
-        this(name, 0);
     }
 
     public String getName() {
@@ -106,11 +114,11 @@ public final class CType {
     }
 
     public CType arrayOf() {
-        return new CType(name, arrayDimensions + 1);
+        return CType.of(name, arrayDimensions + 1);
     }
 
     public CType arrayBaseType() {
-        return arrayDimensions == 0 ? this : new CType(name, 0);
+        return arrayDimensions == 0 ? this : CType.of(name, 0);
     }
 
     public boolean isPrimitive() {return primitive;}
@@ -153,7 +161,6 @@ public final class CType {
         return primitive ? "" : String.format("import %s;\n", name);
     }
 
-    @SuppressWarnings("ConstantConditions") //Small conflict with lombok, can be safely ignored
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
