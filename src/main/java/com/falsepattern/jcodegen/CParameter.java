@@ -24,11 +24,13 @@ package com.falsepattern.jcodegen;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 @Builder
 @RequiredArgsConstructor
-public final class CParameter {
+public final class CParameter implements TypeCarrier{
     private final CType type;
     private final String name;
 
@@ -37,17 +39,21 @@ public final class CParameter {
     public String getName() {return name;}
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        CParameter that = (CParameter) obj;
-        return Objects.equals(this.type, that.type) &&
-               Objects.equals(this.name, that.name);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CParameter)) return false;
+
+        CParameter that = (CParameter) o;
+
+        if (!getType().equals(that.getType())) return false;
+        return getName().equals(that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, name);
+        int result = getType().hashCode();
+        result = 31 * result + getName().hashCode();
+        return result;
     }
 
     @Override
@@ -55,4 +61,8 @@ public final class CParameter {
         return type.getSimpleName() + " " + name;
     }
 
+    @Override
+    public Set<CType> getTypes() {
+        return Collections.singleton(type);
+    }
 }

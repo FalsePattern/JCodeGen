@@ -24,6 +24,7 @@ package com.falsepattern.jcodegen;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @Builder
 @RequiredArgsConstructor
@@ -44,4 +45,39 @@ public class CField {
     }
 
     public CType type(){return type;}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CField)) return false;
+
+        CField cField = (CField) o;
+
+        return name.equals(cField.name);
+    }
+
+    public CMethod getter() {
+        return CMethod.builder()
+                .returnType(type)
+                .accessSpecifier(AccessSpecifier.builder().visibility(AccessSpecifier.Visibility.PUBLIC).isStatic(accessSpecifier.isStatic).build())
+                .name("get" + name.substring(0, 1).toUpperCase() + name.substring(1))
+                .code("return " + name + ";")
+                .build();
+    }
+
+    public CMethod setter() {
+        if (accessSpecifier.isFinal) throw new IllegalArgumentException("Cannot create a setter method for a final variable");
+        return CMethod.builder()
+                .returnType(CType.VOID)
+                .accessSpecifier(AccessSpecifier.builder().visibility(AccessSpecifier.Visibility.PUBLIC).isStatic(accessSpecifier.isStatic).build())
+                .name("set" + name.substring(0, 1).toUpperCase() + name.substring(1))
+                .paramList(CImmutableList.<CParameter>builder().addParam(CParameter.builder().type(type).name("value").build()).build())
+                .code(name + " = value;")
+                .build();
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

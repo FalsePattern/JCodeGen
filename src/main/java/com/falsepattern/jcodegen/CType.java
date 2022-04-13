@@ -163,18 +163,23 @@ public final class CType {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        CType that = (CType) obj;
-        return Objects.equals(this.name, that.name) &&
-               this.primitive == that.primitive &&
-               this.arrayDimensions == that.arrayDimensions;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CType)) return false;
+
+        CType cType = (CType) o;
+
+        if (isPrimitive() != cType.isPrimitive()) return false;
+        if (arrayDimensions != cType.arrayDimensions) return false;
+        return getName().equals(cType.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, primitive, arrayDimensions);
+        int result = getName().hashCode();
+        result = 31 * result + (isPrimitive() ? 1 : 0);
+        result = 31 * result + arrayDimensions;
+        return result;
     }
 
     private static Class<?> getBaseTypeOfNDimensionalArray(Class<?> clazz) {

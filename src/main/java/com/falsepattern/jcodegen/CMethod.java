@@ -26,6 +26,7 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public class CMethod implements TypeCarrier {
     public final CType returnType = CType.VOID;
     public final String name;
     @Builder.Default
-    public final CParamList paramList = new CParamList();
+    public final CImmutableList<CParameter> paramList = new CImmutableList<>(Collections.emptySet());
     public final String code;
 
     @Override
@@ -56,6 +57,24 @@ public class CMethod implements TypeCarrier {
         val result = new HashSet<CType>();
         result.add(returnType);
         result.addAll(paramList.getTypes());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CMethod)) return false;
+
+        CMethod cMethod = (CMethod) o;
+
+        if (!name.equals(cMethod.name)) return false;
+        return paramList.equals(cMethod.paramList);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + paramList.hashCode();
         return result;
     }
 }

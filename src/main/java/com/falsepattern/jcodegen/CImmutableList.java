@@ -21,48 +21,46 @@
  */
 package com.falsepattern.jcodegen;
 
+import lombok.val;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CParamList implements TypeCarrier {
-    private final List<CParameter> parameters = new ArrayList<>();
+public class CImmutableList<T> implements TypeCarrier {
+    private final List<T> parameters = new ArrayList<>();
 
-    public CParamList(CParameter... params) {
-        Collections.addAll(parameters, params);
-    }
-
-    public CParamList(Collection<CParameter> params) {
+    public CImmutableList(Collection<T> params) {
         parameters.addAll(params);
     }
 
-    public List<CParameter> getParameters() {
+    public List<T> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
     @Override
     public Set<CType> getTypes() {
-        return Collections.unmodifiableSet(parameters.stream().map(CParameter::getType).collect(Collectors.toSet()));
+        return parameters.stream().filter((x) -> x instanceof TypeCarrier).flatMap((x) -> ((TypeCarrier)x).getTypes().stream()).collect(Collectors.toSet());
     }
 
     @Override
     public String toString() {
-        return parameters.stream().map(CParameter::toString).collect(Collectors.joining(", "));
+        return parameters.stream().map(Object::toString).collect(Collectors.joining(", "));
     }
 
-    public static CParamListBuilder builder() {
-        return new CParamListBuilder();
+    public static <T> CImmutableListBuilder<T> builder() {
+        return new CImmutableListBuilder<>();
     }
 
-    public static class CParamListBuilder {
-        private CParamListBuilder(){}
-        private final List<CParameter> params = new ArrayList<>();
-        public CParamListBuilder addParam(CParameter param) {
+    public static class CImmutableListBuilder<T> {
+        private CImmutableListBuilder(){}
+        private final List<T> params = new ArrayList<>();
+        public CImmutableListBuilder<T> addParam(T param) {
             params.add(param);
             return this;
         }
 
-        public CParamList build() {
-            return new CParamList(params);
+        public CImmutableList<T> build() {
+            return new CImmutableList<>(params);
         }
     }
 }

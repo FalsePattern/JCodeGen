@@ -25,6 +25,7 @@ import com.falsepattern.jcodegen.util.StringUtil;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
 import java.util.Set;
 
 @Builder
@@ -33,7 +34,7 @@ public class CConstructor implements TypeCarrier {
     @Builder.Default
     public final AccessSpecifier accessSpecifier = AccessSpecifier.builder().build();
     @Builder.Default
-    public final CParamList paramList = new CParamList();
+    public final CImmutableList<CParameter> paramList = new CImmutableList<>(Collections.emptySet());
     @Builder.Default
     public final String code = "";
 
@@ -48,5 +49,20 @@ public class CConstructor implements TypeCarrier {
     @Override
     public Set<CType> getTypes() {
         return paramList.getTypes();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CConstructor)) return false;
+
+        CConstructor that = (CConstructor) o;
+
+        return paramList.equals(that.paramList);
+    }
+
+    @Override
+    public int hashCode() {
+        return paramList.hashCode();
     }
 }

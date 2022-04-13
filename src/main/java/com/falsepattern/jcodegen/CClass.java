@@ -43,6 +43,7 @@ public class CClass {
     @Builder.Default
     @Getter
     private final CType superclass = CType.OBJECT;
+    private final Set<CAnnotation> annotations = new HashSet<>();
     private final Set<CType> imports = new HashSet<>();
     private final List<CField> fields = new ArrayList<>();
     private final List<CConstructor> constructors = new ArrayList<>();
@@ -71,13 +72,18 @@ public class CClass {
         methods.add(method);
     }
 
+    public void addAnnotation(CAnnotation annotation) {
+        imports.addAll(annotation.getTypes());
+        annotations.add(annotation);
+    }
+
     public void superConstructors(CClass other) {
         constructors.forEach((constructor) -> {
             if (constructor.accessSpecifier.visibility.equals(AccessSpecifier.Visibility.PRIVATE)) return;
             if (constructor.accessSpecifier.visibility.equals(AccessSpecifier.Visibility.PACKAGE) && !other.pkg.equals(pkg)) return;
             other.addConstructor(CConstructor.builder()
                                              .accessSpecifier(AccessSpecifier.builder().visibility(constructor.accessSpecifier.visibility).build())
-                                             .paramList(new CParamList(constructor.paramList.getParameters().toArray(new CParameter[0])))
+                                             .paramList(constructor.paramList)
                                              .code("super(" + constructor.paramList.getParameters().stream().map(CParameter::getName).collect(Collectors.joining(", ")) + ");")
                                              .build());
         });
@@ -88,9 +94,11 @@ public class CClass {
         var fieldString = fields.stream().map(CField::toString).collect(Collectors.joining("\n"));
         var constructorString = constructors.stream().map(constructor -> constructor.toString(name)).collect(Collectors.joining("\n"));
         val methodString = methods.stream().map(CMethod::toString).collect(Collectors.joining("\n"));
+        val annotationString = annotations.stream().map(CAnnotation::toString).collect(Collectors.joining("\n"));
         return String.format(
                "package %s;\n" +
                "\n" +
+               "%s\n" +
                "%s\n" +
                "%s\n" +
                "%sclass %s%s {\n" +
@@ -101,6 +109,7 @@ public class CClass {
                pkg,
                 imports.stream().filter((cType -> !cType.isPrimitive())).filter(imp -> !imp.getName().equals(pkg + "." + imp.getSimpleName())).map(CType::asImport).sorted().collect(Collectors.joining()),
                 superclass != null && !superclass.equals(CType.OBJECT) ? superclass.getName().equals(pkg + "." + superclass.getSimpleName()) ? "" : "import " + superclass.getName() + ";\n" : "",
+                annotationString,
                 accessSpecifier,
                 name,
                 superclass != null && !superclass.equals(CType.OBJECT) ? " extends " + superclass.getSimpleName() : "",
